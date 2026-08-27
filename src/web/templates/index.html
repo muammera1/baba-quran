@@ -763,7 +763,9 @@
                             <span>${m.display_name || 'عضو بدون اسم'}</span>
                             ${m.is_admin ? '<span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">مشرف</span>' : ''}
                         </td>
-                        <td class="py-3.5 px-4 text-slate-500 font-mono">${m.phone_number || m.jid}</td>
+                        <td class="py-3.5 px-4 font-mono text-slate-600">
+                            <span dir="ltr" class="inline-block font-semibold text-slate-700 tracking-wider">${m.phone_number || m.jid}</span>
+                        </td>
                         <td class="py-3.5 px-4 text-center">${reactionHtml}</td>
                         <td class="py-3.5 px-4 text-center">${reminderHtml}</td>
                         <td class="py-3.5 px-4 text-center">
