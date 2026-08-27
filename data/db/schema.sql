@@ -35,8 +35,8 @@ VALUES (1, 1, 1);
 -- Stores family members participating in the daily Quran reading group
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS group_members (
-    jid TEXT PRIMARY KEY,                              -- WhatsApp JID (e.g. 180569132535857@lid)
-    phone_number TEXT,                                 -- Formatted phone number (e.g. +971 55 123 2716)
+    jid TEXT PRIMARY KEY,                              -- WhatsApp JID (e.g. 12345678901234@lid)
+    phone_number TEXT,                                 -- Formatted phone number (e.g. +971 50 000 0000)
     display_name TEXT,                                 -- Saved contact name or pushname
     is_active INTEGER NOT NULL DEFAULT 1,              -- 1 = Active member, 0 = Inactive
     is_admin INTEGER NOT NULL DEFAULT 0,               -- 1 = Group Admin, 0 = Regular member

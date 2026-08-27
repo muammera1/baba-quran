@@ -100,7 +100,7 @@ erDiagram
     }
 
     GROUP_MEMBERS {
-        string jid PK "e.g. 17218725249248@lid"
+        string jid PK "e.g. 12345678901234@lid"
         string phone_number
         string display_name
         boolean is_active
@@ -150,7 +150,7 @@ erDiagram
 2. **Reaction Model Parsing**:
    - On-demand inspection uses `window.WPP.whatsapp.ReactionsStore.get(msgId)`.
    - Traverses `rEntry.reactions[].senders[]` extracting:
-     - `senderUserJid`: The member JID (e.g. `17218725249248@lid`)
+     - `senderUserJid`: The member JID (e.g. `12345678901234@lid`)
      - `reactionText`: The exact emoji (e.g. `🙏`, `👍`)
    - Updates `member_activity` in SQLite: `reacted = 1, reaction_emoji = '🙏', reacted_at = CURRENT_TIMESTAMP`.
 
@@ -163,8 +163,8 @@ erDiagram
 | **Quran Asset Cache** | ✅ Complete | 604 Madinah Tajweed pages (`1.png` to `604.png`) cached locally in `data/pages/`. |
 | **SQLite Core & Models** | ✅ Complete | Database initialized with WAL mode, state tracking, and settings manager. |
 | **WA-JS API Engine** | ✅ Complete | Direct media dispatch & reaction hooks verified with live server message ACKs. |
-| **Live WhatsApp Group Verified** | ✅ Complete | Delivered directly to **"ختمة ابراهيم معمر رحمه الله"** (`120363429851468692@g.us`). |
-| **Group Roster Sync** | ✅ Complete | Synced all 7 real family members with names and admin badges. |
+| **Live WhatsApp Group Verified** | ✅ Complete | Delivered directly to configured target WhatsApp group. |
+| **Group Roster Sync** | ✅ Complete | Synced family members with names, verified numbers, and admin badges. |
 | **Manual Starting Page Slider** | ✅ Complete | Interactive slider (1-604) and CLI `scripts/set_page.py` verified. |
 | **Proactive Posting & Auto-Skip** | ✅ Complete | Instant posting with automatic duplicate skip on scheduled morning runs. |
 | **On-Demand Reaction Engine** | ✅ Complete | Exact `ReactionsStore` sender extraction verified live with member reaction (`🙏`). |

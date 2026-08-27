@@ -75,7 +75,7 @@ class WhatsAppClient:
         # Live Playwright WhatsApp dispatch
         try:
             from src.whatsapp.playwright_client import pw_whatsapp
-            invite_code = "DOFAfpcC0og4sgYLuoNoGr"
+            invite_code = ""
             if "chat.whatsapp.com/" in target_group:
                 invite_code = target_group.split("chat.whatsapp.com/")[-1].split("?")[0].strip()
             

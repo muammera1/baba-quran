@@ -28,7 +28,7 @@
 - **Parsing Structure**: In WhatsApp Web, member reactions are retrieved via `window.WPP.whatsapp.ReactionsStore.get(msgId)`:
   - Reactions array: `rEntry.reactions`
   - Senders list: `group.senders`
-  - Member JID: `sender.senderUserJid` (e.g. `17218725249248@lid`)
+  - Member JID: `sender.senderUserJid` (e.g. `12345678901234@lid`)
   - Emoji: `sender.reactionText` (e.g. `🙏`, `👍`, `❤️`)
 
 ### 4. Proactive Manual Posting & Automatic Schedule Skip

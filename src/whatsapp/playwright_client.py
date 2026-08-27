@@ -26,16 +26,16 @@ DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "d
 class WhatsAppApiClient:
     """Direct API-based WhatsApp Web automation using injected WPP client."""
 
-    def __init__(self, group_name: str = "ختمة ابراهيم معمر") -> None:
-        self.group_name = group_name
+    def __init__(self, group_name: Optional[str] = None) -> None:
+        self.group_name = group_name or os.getenv("WHATSAPP_GROUP_NAME", "ختمة القرآن الكريم")
         self.session_dir = SESSION_DIR
         self.playwright = None
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
         self.is_logged_in = False
         self.is_ready = False
-        self.group_jid: Optional[str] = "120363429851468692@g.us"
         self.db = Database(DB_PATH)
+        self.group_jid: Optional[str] = self.db.get_setting("group_jid") or os.getenv("WHATSAPP_GROUP_JID", "")
         self.reaction_callbacks: List[Callable[[Dict[str, Any]], Any]] = []
 
     @property
@@ -196,11 +196,11 @@ class WhatsAppApiClient:
                     (c.name || '').includes('{name_substr}') || 
                     (c.formattedTitle || '').includes('{name_substr}')
                 );
-                return group ? group.id._serialized : '120363429851468692@g.us';
+                return group ? group.id._serialized : null;
             }}""")
         except Exception as e:
             logger.warning(f"Could not search group JID: {e}")
-            return self.group_jid or "120363429851468692@g.us"
+            return self.group_jid
 
     async def send_image_direct(self, image_path: str, caption: str, target_jid: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Direct API call to send image binary to WhatsApp chat."""
@@ -214,12 +214,12 @@ class WhatsAppApiClient:
         data_url = f"data:image/png;base64,{b64_data}"
         filename = os.path.basename(image_path)
 
-        jid = target_jid or self.group_jid or "120363429851468692@g.us"
+        jid = target_jid or self.group_jid or self.db.get_setting("group_jid") or os.getenv("WHATSAPP_GROUP_JID", "")
         logger.info(f"Sending image {filename} directly via WPP API to {jid}...")
 
         # Ensure chat is open and loaded into ChatStore
         try:
-            chat_item = await self.page.query_selector('span[title*="ختمة ابراهيم معمر" i], div[role="listitem"]:has-text("ختمة ابراهيم معمر")')
+            chat_item = await self.page.query_selector(f'span[title*="{self.group_name}" i]')
             if chat_item:
                 await chat_item.click()
                 await self.page.wait_for_timeout(1000)
@@ -293,7 +293,7 @@ class WhatsAppApiClient:
         except Exception as ie:
             logger.warning(f"WA-JS check warning: {ie}")
 
-        jid = self.group_jid or "120363429851468692@g.us"
+        jid = self.group_jid or self.db.get_setting("group_jid") or os.getenv("WHATSAPP_GROUP_JID", "")
         logger.info(f"Posting {len(image_paths)} Quran page images directly via WPP API to {jid}...")
         all_success = True
 
@@ -349,7 +349,7 @@ class WhatsAppApiClient:
         if not self.page or not self.is_ready:
             return []
 
-        jid = self.group_jid or "120363429851468692@g.us"
+        jid = self.group_jid or self.db.get_setting("group_jid") or os.getenv("WHATSAPP_GROUP_JID", "")
         try:
             members = await self.page.evaluate(f"""async () => {{
                 try {{
@@ -430,7 +430,7 @@ class WhatsAppApiClient:
         if not self.page:
             return []
 
-        jid = self.group_jid or "120363429851468692@g.us"
+        jid = self.group_jid or self.db.get_setting("group_jid") or os.getenv("WHATSAPP_GROUP_JID", "")
         try:
             raw_reactions = await self.page.evaluate(f"""async () => {{
                 try {{

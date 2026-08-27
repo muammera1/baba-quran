@@ -34,7 +34,7 @@ Returns complete runtime health, bot state, Khatmah progress, reactions count, a
     "reminder_processed": false
   },
   "settings": {
-    "group_jid": "120363429851468692@g.us",
+    "group_jid": "120363000000000000@g.us",
     "pages_per_day": 2,
     "post_time": "07:00",
     "reminder_hours_after_post": 12,
@@ -51,9 +51,9 @@ Returns the list of all participating family members with their display names, r
 ```json
 [
   {
-    "jid": "180569132535857@lid",
-    "display_name": "Muammar 🇦🇪",
-    "phone_number": "+971 55 123 2716",
+    "jid": "10000000000001@lid",
+    "display_name": "أحمد (مشرف)",
+    "phone_number": "+971 50 000 0001",
     "is_admin": true,
     "is_exempt": false,
     "reacted": false,
@@ -61,10 +61,10 @@ Returns the list of all participating family members with their display names, r
     "reminder_sent": false
   },
   {
-    "jid": "17218725249248@lid",
-    "display_name": "Muammar 🇨🇦",
-    "phone_number": "+1 (289) 885-5514",
-    "is_admin": true,
+    "jid": "10000000000002@lid",
+    "display_name": "محمد",
+    "phone_number": "+971 50 000 0002",
+    "is_admin": false,
     "is_exempt": false,
     "reacted": true,
     "reaction_emoji": "🙏",
@@ -124,8 +124,8 @@ Scans WhatsApp Web's `ReactionsStore` on-demand for reactions placed on the acti
   "message": "تم جلب ومزامنة 1 تفاعل من واتساب",
   "reactions": [
     {
-      "msgId": "true_120363429851468692@g.us_3EB08FE684DC03278042BC_180569132535857@lid",
-      "sender": "17218725249248@lid",
+      "msgId": "true_120363000000000000@g.us_3EB08FE684DC03278042BC_10000000000001@lid",
+      "sender": "10000000000002@lid",
       "emoji": "🙏"
     }
   ]
@@ -148,7 +148,7 @@ Toggles the 12-hour reminder exemption flag for a specific group member.
 **Request Payload**:
 ```json
 {
-  "jid": "180569132535857@lid"
+  "jid": "10000000000001@lid"
 }
 ```
 

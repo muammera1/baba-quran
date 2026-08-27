@@ -31,9 +31,9 @@ class GroupMember:
     """Represents a WhatsApp family group participant.
 
     Attributes:
-        jid: Unique WhatsApp user/LID JID (e.g. '180569132535857@lid' or '123456@s.whatsapp.net').
-        phone_number: Verified international formatted phone number (e.g. '+971 55 123 2716').
-        display_name: Saved address book contact name or pushname (e.g. 'Muammar 🇦🇪').
+        jid: Unique WhatsApp user/LID JID (e.g. '12345678901234@lid' or '123456@s.whatsapp.net').
+        phone_number: Verified international formatted phone number (e.g. '+971 50 000 0000').
+        display_name: Saved address book contact name or pushname (e.g. 'أحمد').
         is_active: Whether the member is currently active in the group.
         is_admin: Whether the member holds admin privileges in the group.
         is_exempt: If True, this member is excluded from automated 12-hour reminder DMs.
