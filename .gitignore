@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment & Secrets
+.env
+.env.local
+
+# WhatsApp Session Auth (Crucial: Keep Private)
+data/session/*
+!data/session/.gitkeep
+
+# Local SQLite Database (Contains member phone numbers and private state)
+data/db/*.db
+data/db/*.db-journal
+data/db/*.db-wal
+!data/db/.gitkeep
+
+# Cached Quran Page Images (Pre-downloaded via script)
+data/pages/*.png
+!data/pages/.gitkeep
+
+# Logs & Transient Runtime Files
+*.log
+*.pid
+data/*.pid
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

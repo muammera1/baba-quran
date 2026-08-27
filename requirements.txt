@@ -1,0 +1,18 @@
+# Core & Scheduling
+APScheduler>=3.10.4
+pytz>=2024.1
+
+# Configuration & Data Validation
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+PyYAML>=6.0.1
+python-dotenv>=1.0.1
+
+# Media & Network
+aiohttp>=3.9.5
+Pillow>=10.3.0
+tqdm>=4.66.4
+
+# Testing
+pytest>=8.2.0
+pytest-asyncio>=0.23.6

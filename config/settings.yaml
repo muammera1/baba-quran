@@ -1,0 +1,43 @@
+# Baba Quran Application Settings
+
+reading:
+  pages_per_day: 2
+  post_time: "07:00"
+  reminder_hours_after_post: 12
+  timezone: "Asia/Riyadh"
+
+special_schedules:
+  - id: "friday_kahf"
+    enabled: true
+    trigger: "friday"
+    surah_name: "Al-Kahf"
+    surah_arabic: "سورة الكهف"
+    page_start: 293
+    page_end: 304
+    advance_khatmah: false # Keeps the main Khatmah progression pointer unchanged
+
+templates:
+  daily_post_caption: |
+    📖 *ورد اليوم من القرآن الكريم*
+    📅 {date}
+    📄 الصفحات: {page_start} - {page_end}
+    🕋 السور: {surah_names}
+    ✨ الجزء: {juz}
+    
+    _فضلاً ضع تفاعلاً (أي إيموجي) على هذه الرسالة بعد إتمام القراءة_ 🤲
+  
+  special_post_caption: |
+    🕌 *قراءة {surah_arabic}*
+    📅 {date}
+    📄 الصفحات: {page_start} - {page_end}
+    
+    _فضلاً ضع تفاعلاً (أي إيموجي) بعد إتمام القراءة_ 🤲
+    
+  dm_reminder: |
+    السلام عليكم ورحمة الله وبركاته يا {member_name} 🌸
+    
+    تذكير لطيف بقراءة ورد القرآن الكريم لليوم (صفحة {page_start} إلى {page_end}).
+    
+    عند الانتهاء، فضلاً ضع تفاعلاً (أي إيموجي) على رسالة الورد في المجموعة لتسجيل إتمام القراءة.
+    
+    جزاك الله خيراً وتقبل الله طاعتكم 🤲

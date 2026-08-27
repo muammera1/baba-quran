@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم بابا قرآن | Baba Quran Admin</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Amiri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        quran: ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .quran-text { font-family: 'Amiri', serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-emerald-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 bg-gold-500 rounded-xl flex items-center justify-center text-emerald-950 font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-book-quran"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight">بابا قرآن <span class="text-xs font-normal text-emerald-200 mr-2">لوحة الإدارة الذكية</span></h1>
+                    <p class="text-xs text-emerald-200">جدولة وتتبع ورد القرآن الكريم اليومي على واتساب</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <!-- Chrome Profile 2 Status & Connect Button -->
+                <button id="btn-chrome-status" onclick="launchChromeProfile()" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 border border-emerald-700">
+                    <i class="fa-brands fa-chrome text-amber-400"></i>
+                    <span id="chrome-status-text">ربط متصفح Chrome (بروفايل 2)</span>
+                </button>
+
+                <!-- Bot Status Badge -->
+                <div id="bot-status-pill" class="flex items-center space-x-2 space-x-reverse px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-950 border border-emerald-700">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400 animate-pulse" id="status-dot"></span>
+                    <span id="status-text">جاري التحقق...</span>
+                </div>
+
+                <!-- Bot Start/Stop Button -->
+                <button id="btn-toggle-bot" onclick="toggleBotState()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white">
+                    <i class="fa-solid fa-play"></i>
+                    <span>تشغيل البوت</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[68px] z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8 space-x-reverse overflow-x-auto text-sm font-semibold">
+            <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active py-3 border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie"></i> نظرة عامة
+            </button>
+            <button onclick="switchTab('members')" id="tab-btn-members" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-users"></i> الأعضاء والتفاعل (<span id="tab-members-count">0</span>)
+            </button>
+            <button onclick="switchTab('surahs')" id="tab-btn-surahs" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-book-open"></i> قراءة سورة مخصصة
+            </button>
+            <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-sliders"></i> الإعدادات والجدولة
+            </button>
+            <button onclick="switchTab('logs')" id="tab-btn-logs" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-terminal"></i> سجل العمليات المباشر
+            </button>
+        </div>
+    </nav>
+
+    <!-- Alert / Toast Banner -->
+    <div id="toast" class="hidden fixed bottom-6 left-6 z-50 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300"></div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <section id="tab-dashboard" class="space-y-6">
+
+            <!-- WhatsApp QR Code Pairing Alert Card -->
+            <div id="qr-pairing-card" class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-2 max-w-xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-qrcode"></i> خطوة الربط السريع (لمرة واحدة فقط)
+                    </div>
+                    <h3 class="text-lg font-bold text-amber-950">امسح رمز QR لربط واتساب بالبوت</h3>
+                    <p class="text-xs text-amber-800 leading-relaxed">
+                        افتح تطبيق واتساب على هاتفك ➔ اضغط على <b>الأجهزة المرتبطة (Linked Devices)</b> ➔ اضغط على <b>ربط جهاز (Link a Device)</b> ➔ وجّه الكاميرا نحو رمز QR التالي.
+                    </p>
+                    <div class="text-[11px] text-amber-700 font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> الجلسة ستحفظ محلياً في جهازك ولن تحتاج لمسح الرمز مرة أخرى.
+                    </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-2xl shadow border border-amber-200 flex flex-col items-center">
+                    <img id="qr-image" src="/qr" alt="QR Code" class="w-48 h-48 object-contain rounded-lg" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://web.whatsapp.com';" />
+                    <span class="text-[11px] text-slate-500 mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-rotate text-emerald-600 animate-spin"></i> يتم التحديث تلقائياً
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Khatmah Progress Card -->
+            <div class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -left-10 -bottom-10 opacity-10 text-9xl">
+                    <i class="fa-solid fa-quran"></i>
+                </div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-700/50 rounded-full text-xs font-semibold text-emerald-200 border border-emerald-600/50 mb-2">
+                            <i class="fa-solid fa-arrows-rotate text-gold-400"></i> الختمة رقم <span id="khatmah-cycle">1</span>
+                        </div>
+                        <h2 class="text-2xl font-bold">تقدم قراءة المصحف الشريف</h2>
+                        <p class="text-emerald-200 text-sm mt-1">الصفحة التالية للجدولة: <span class="font-extrabold text-gold-400 text-lg" id="khatmah-current-page">1</span> من 604</p>
+                    </div>
+
+                    <div class="text-left md:text-right">
+                        <span class="text-3xl font-black text-gold-400" id="khatmah-percent">0.2%</span>
+                        <p class="text-xs text-emerald-300">نسبة إنجاز الختمة الحالية</p>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-5 bg-emerald-950/60 rounded-full h-3.5 p-0.5 border border-emerald-700/50">
+                    <div id="khatmah-progress-bar" class="bg-gradient-to-r from-gold-500 to-amber-300 h-2.5 rounded-full transition-all duration-500" style="width: 0.5%"></div>
+                </div>
+
+                <!-- Interactive Page Slider & Schedule Adjuster -->
+                <div class="mt-5 bg-emerald-950/40 border border-emerald-700/40 rounded-xl p-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gold-400"><i class="fa-solid fa-sliders"></i> التحكم وتعديل بداية الورد القادم:</span>
+                            <span id="slider-preview-surah" class="text-xs px-2 py-0.5 bg-emerald-800 text-emerald-100 rounded-md border border-emerald-600/50">سورة الفاتحة</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustSlider(-10)" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-emerald-200 rounded text-xs font-bold">-10</button>
+                            <button type="button" onclick="adjustSlider(-1)" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-emerald-200 rounded text-xs font-bold">-1</button>
+                            <input type="number" id="manual-page-input" min="1" max="604" value="1" oninput="onManualPageInput(this.value)" class="w-16 px-2 py-1 text-center bg-emerald-900 text-gold-400 font-extrabold text-sm rounded border border-emerald-600 focus:outline-none focus:ring-1 focus:ring-gold-400" />
+                            <button type="button" onclick="adjustSlider(1)" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-emerald-200 rounded text-xs font-bold">+1</button>
+                            <button type="button" onclick="adjustSlider(10)" class="px-2 py-1 bg-emerald-800 hover:bg-emerald-700 text-emerald-200 rounded text-xs font-bold">+10</button>
+                        </div>
+                    </div>
+
+                    <!-- Range Slider -->
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] text-emerald-400 font-mono">1</span>
+                        <input type="range" id="khatmah-slider" min="1" max="604" value="1" oninput="onSliderChange(this.value)" class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-amber-400" />
+                        <span class="text-[10px] text-emerald-400 font-mono">604</span>
+                        <button type="button" onclick="saveKhatmahPage()" class="px-3 py-1.5 bg-gold-500 hover:bg-gold-400 text-emerald-950 font-bold text-xs rounded-lg shadow transition whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-solid fa-check"></i> حفظ البداية
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="mt-5 pt-4 border-t border-emerald-700/60 flex flex-wrap items-center gap-3">
+                    <button onclick="triggerPostNow()" class="px-4 py-2 bg-gold-500 hover:bg-gold-400 text-emerald-950 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> نشر ورد اليوم فوراً
+                    </button>
+                    <button onclick="triggerReminderCheck()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-semibold text-xs border border-emerald-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-bell"></i> فحص تذكيرات الـ 12 ساعة
+                    </button>
+                    <button onclick="refreshData()" class="px-3 py-2 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-200 rounded-xl font-semibold text-xs transition flex items-center gap-1.5 mr-auto">
+                        <i class="fa-solid fa-arrows-rotate"></i> تحديث البيانات
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Metrics Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">الأعضاء النشطين</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-active-members">0</h3>
+                        <p class="text-[11px] text-emerald-600 font-medium mt-1"><i class="fa-solid fa-circle-check"></i> متصل بالمجموعة</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">موعد النشر اليومي</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-post-time">07:00 ص</h3>
+                        <p class="text-[11px] text-slate-500 font-medium mt-1" id="stat-pages-per-day">2 صفحات / يوم</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">نافذة التذكير الخاص</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-reminder-hours">12 ساعة</h3>
+                        <p class="text-[11px] text-purple-600 font-medium mt-1"><i class="fa-solid fa-message"></i> رسالة خاصة لطيفة</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">تفاعل ورد اليوم</p>
+                        <h3 class="text-2xl font-bold text-slate-800 mt-1" id="stat-today-reactions">0 / 0</h3>
+                        <p class="text-[11px] text-slate-500 font-medium mt-1" id="stat-reaction-percent">0% أتموا القراءة</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Today's Post Status Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                        <h3 class="text-base font-bold text-slate-800">بيانات آخر منشور لورد اليوم</h3>
+                    </div>
+                    <span id="today-post-date" class="text-xs text-slate-500 font-semibold bg-slate-100 px-3 py-1 rounded-full">اليوم</span>
+                </div>
+
+                <div id="today-post-details" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-xs text-slate-500">الصفحات المنشورة:</span>
+                        <p class="text-lg font-bold text-emerald-800 mt-0.5" id="post-pages">صفحة 1 إلى 2</p>
+                        <p class="text-xs text-slate-500 mt-1" id="post-surahs">السور: الفاتحة، البقرة</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-xs text-slate-500">وقت النشر الفعلي:</span>
+                        <p class="text-lg font-bold text-slate-800 mt-0.5" id="post-time-stamp">-</p>
+                        <p class="text-xs text-slate-500 mt-1" id="post-type-badge">نوع المنشور: ختمة عادية</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-xs text-slate-500">موعد إرسال التذكير الخاص (12 س):</span>
+                        <p class="text-lg font-bold text-amber-700 mt-0.5" id="post-reminder-due">-</p>
+                        <p class="text-xs text-slate-500 mt-1" id="post-reminder-status">حالة التذكير: في الانتظار</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== TAB 2: MEMBERS & REACTIONS ==================== -->
+        <section id="tab-members" class="hidden space-y-6">
+            
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">أعضاء المجموعة وتفاعل اليوم</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">تتبع تفاعلات كل عضو (أي إيموجي يُحتسب كإتمام قراءة) وحالة التذكير الخاص.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="syncReactionsNow()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-thumbs-up"></i> فحص التفاعلات الآن
+                        </button>
+                        <button onclick="syncMembersFromWhatsApp()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-arrows-rotate"></i> مزامنة الأعضاء
+                        </button>
+                        <button onclick="openAddMemberModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-user-plus"></i> إضافة عضو يدوياً
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Members Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="py-3.5 px-4 rounded-r-xl">العضو</th>
+                                <th class="py-3.5 px-4">رقم الهاتف / المعرف</th>
+                                <th class="py-3.5 px-4 text-center">تفاعل اليوم</th>
+                                <th class="py-3.5 px-4 text-center">حالة التذكير</th>
+                                <th class="py-3.5 px-4 text-center">الإعفاء من التذكير</th>
+                                <th class="py-3.5 px-4 text-center rounded-l-xl">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-table-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-slate-400">جاري تحميل قائمة الأعضاء...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== TAB 3: OFF-THE-PLAN SURAHS ==================== -->
+        <section id="tab-surahs" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="max-w-2xl">
+                    <h3 class="text-lg font-bold text-slate-800">نشر سورة مخصصة (خارج الخطة)</h3>
+                    <p class="text-xs text-slate-500 mt-1">يمكنك اختيار أي سورة لنشرها فوراً في المجموعة (مثل سورة الكهف، يس، الملك) دون التأثير على تسلسل الختمة اليومية.</p>
+
+                    <div class="mt-6 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">اختر السورة الكريمة:</label>
+                            <select id="surah-select" onchange="onSurahSelected()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50">
+                                <option value="">-- اختر سورة من القائمة --</option>
+                            </select>
+                        </div>
+
+                        <!-- Selected Surah Info Card -->
+                        <div id="selected-surah-card" class="hidden p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
+                            <div class="flex items-center justify-between">
+                                <span class="font-extrabold text-base quran-text" id="selected-surah-title">سورة الكهف</span>
+                                <span class="text-xs px-2.5 py-1 bg-emerald-200 text-emerald-800 rounded-full font-bold" id="selected-surah-pages">الصفحات: 293 إلى 304</span>
+                            </div>
+                            <p class="text-xs text-emerald-700 mt-2">سيتم إرسال صور جميع صفحات هذه السورة مع رسالة منسقة إلى المجموعة.</p>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="postSelectedSurah()" id="btn-post-surah" disabled class="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-md transition flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> إرسال السورة إلى المجموعة الآن
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: SETTINGS ==================== -->
+        <section id="tab-settings" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-1">إعدادات الجدولة والتطبيق</h3>
+                <p class="text-xs text-slate-500 mb-6">قم بتعديل مواعيد النشر، عدد الصفحات، والخيارات المتقدمة.</p>
+
+                <form id="settings-form" onsubmit="saveSettings(event)" class="max-w-2xl space-y-5">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">معرف مجموعة واتساب (Group JID):</label>
+                        <input type="text" id="setting-group-jid" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="120363xxxxxxxxx@g.us">
+                        <span class="text-[11px] text-slate-400">يمكنك الحصول على المعرف عبر معالج الإعداد أو نسخه من واتساب.</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">وقت النشر اليومي (24 ساعة):</label>
+                            <input type="time" id="setting-post-time" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="07:00">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">عدد الصفحات اليومية:</label>
+                            <input type="number" id="setting-pages-per-day" min="1" max="20" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="2">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">مهلة التذكير الخاص (بالساعات):</label>
+                            <input type="number" id="setting-reminder-hours" min="1" max="24" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" value="12">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">المنطقة الزمنية (Timezone):</label>
+                            <select id="setting-timezone" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                                <option value="Asia/Riyadh">Asia/Riyadh (توقيت مكة المكرمة)</option>
+                                <option value="UTC">UTC (التوقيت العالمي)</option>
+                                <option value="America/New_York">America/New_York (نيويورك)</option>
+                                <option value="Africa/Cairo">Africa/Cairo (القاهرة)</option>
+                                <option value="Asia/Dubai">Asia/Dubai (دبي)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-200">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" id="setting-friday-kahf" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
+                            <span class="text-xs font-bold text-slate-700">تفعيل النشر التلقائي لسورة الكهف كل يوم جمعة (الصفحات 293-304)</span>
+                        </label>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 5: LIVE LOGS ==================== -->
+        <section id="tab-logs" class="hidden space-y-6">
+            <div class="bg-slate-900 text-emerald-400 rounded-2xl border border-slate-800 shadow-xl p-6 font-mono text-xs">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="font-bold text-white">سجل العمليات المباشر (Live Logs)</span>
+                    </div>
+                    <button onclick="fetchLogs()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] transition">
+                        <i class="fa-solid fa-rotate"></i> تحديث السجل
+                    </button>
+                </div>
+                <pre id="log-viewer" class="h-96 overflow-y-auto whitespace-pre-wrap leading-relaxed text-slate-300 scrollbar-thin scrollbar-thumb-slate-700">جاري تحميل السجلات...</pre>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Add Member Modal -->
+    <div id="add-member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h4 class="font-bold text-slate-800 text-base">إضافة عضو جديد إلى المجموعة</h4>
+                <button onclick="closeAddMemberModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form onsubmit="submitAddMember(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم العضو:</label>
+                    <input type="text" id="new-member-name" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="مثال: أحمد محمد">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">رقم الهاتف (مع الرمز الدولي):</label>
+                    <input type="text" id="new-member-phone" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="+966500000000">
+                </div>
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeAddMemberModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md">إضافة العضو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Frontend Script -->
+    <script>
+        let allSurahs = [];
+        let botRunning = false;
+
+        // Switch Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-emerald-600', 'text-emerald-700');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
+            document.getElementById('tab-btn-' + tabId).classList.add('border-emerald-600', 'text-emerald-700');
+            document.getElementById('tab-btn-' + tabId).classList.remove('border-transparent', 'text-slate-500');
+
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            if (tabId === 'logs') fetchLogs();
+            if (tabId === 'members') fetchMembers();
+        }
+
+        // Toast Notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed bottom-6 left-6 z-50 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${isError ? 'bg-red-600 text-white' : 'bg-emerald-800 text-white'}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        // Fetch Dashboard Status
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+
+                // Chrome Profile 2 Status
+                const chromeBtn = document.getElementById('btn-chrome-status');
+                const chromeText = document.getElementById('chrome-status-text');
+                if (data.chrome_connected) {
+                    chromeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 bg-emerald-900 text-emerald-300 border border-emerald-600';
+                    chromeText.textContent = 'Chrome (بروفايل 2) متصل ومفعل';
+                } else {
+                    chromeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 border border-emerald-700';
+                    chromeText.textContent = 'ربط متصفح Chrome (بروفايل 2)';
+                }
+
+                // Bot Status Pill
+                botRunning = data.bot_running;
+                const dot = document.getElementById('status-dot');
+                const text = document.getElementById('status-text');
+                const toggleBtn = document.getElementById('btn-toggle-bot');
+
+                if (botRunning) {
+                    dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+                    text.textContent = 'البوت يعمل بنشاط';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-stop"></i> <span>إيقاف البوت</span>';
+                    toggleBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white';
+                } else {
+                    dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+                    text.textContent = 'البوت متوقف';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تشغيل البوت</span>';
+                    toggleBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white';
+                }
+
+                // WhatsApp Pairing QR Code Display
+                const qrCard = document.getElementById('qr-pairing-card');
+                const qrImg = document.getElementById('qr-image');
+                if (data.whatsapp_logged_in) {
+                    if (qrCard) qrCard.classList.add('hidden');
+                } else {
+                    if (qrCard) {
+                        qrCard.classList.remove('hidden');
+                        if (qrImg) qrImg.src = '/qr?t=' + Date.now();
+                    }
+                }
+
+                // Khatmah Progress
+                document.getElementById('khatmah-cycle').textContent = data.khatmah.cycle_number;
+                document.getElementById('khatmah-current-page').textContent = data.khatmah.current_page;
+                const percent = ((data.khatmah.current_page / 604) * 100).toFixed(1);
+                document.getElementById('khatmah-percent').textContent = percent + '%';
+                document.getElementById('khatmah-progress-bar').style.width = percent + '%';
+
+                // Sync Khatmah Slider if user is not currently sliding
+                if (!isUserSliding) {
+                    const curP = data.khatmah.current_page;
+                    document.getElementById('manual-page-input').value = curP;
+                    document.getElementById('khatmah-slider').value = curP;
+                    updateSurahPreview(curP);
+                }
+
+                // Stat Cards
+                document.getElementById('stat-active-members').textContent = data.active_members_count;
+                document.getElementById('tab-members-count').textContent = data.active_members_count;
+                document.getElementById('stat-post-time').textContent = data.settings.post_time;
+                document.getElementById('stat-pages-per-day').textContent = data.settings.pages_per_day + ' صفحات / يوم';
+                document.getElementById('stat-reminder-hours').textContent = data.settings.reminder_hours_after_post + ' ساعة';
+
+                // Today's Post Card
+                if (data.latest_post) {
+                    const p = data.latest_post;
+                    document.getElementById('today-post-date').textContent = p.post_date;
+                    document.getElementById('post-pages').textContent = `صفحة ${p.page_start} إلى ${p.page_end}`;
+                    document.getElementById('post-surahs').textContent = `السور: ${p.surah_name || 'تلاوة مباركة'}`;
+                    document.getElementById('post-time-stamp').textContent = new Date(p.posted_at).toLocaleTimeString('ar-SA');
+                    document.getElementById('post-type-badge').textContent = `نوع المنشور: ${p.post_type}`;
+                    document.getElementById('post-reminder-due').textContent = p.reminder_due_at ? new Date(p.reminder_due_at).toLocaleTimeString('ar-SA') : 'مكتمل';
+                    document.getElementById('post-reminder-status').textContent = p.reminder_processed ? 'حالة التذكير: تم إرسال التذكيرات' : 'حالة التذكير: قيد الانتظار';
+                    document.getElementById('stat-today-reactions').textContent = `${data.reactions_count} / ${data.active_members_count}`;
+                    const reactPercent = data.active_members_count > 0 ? ((data.reactions_count / data.active_members_count) * 100).toFixed(0) : 0;
+                    document.getElementById('stat-reaction-percent').textContent = `${reactPercent}% أتموا القراءة`;
+                }
+
+                // Settings Form Inputs
+                document.getElementById('setting-group-jid').value = data.settings.group_jid || '';
+                document.getElementById('setting-post-time').value = data.settings.post_time || '07:00';
+                document.getElementById('setting-pages-per-day').value = data.settings.pages_per_day || 2;
+                document.getElementById('setting-reminder-hours').value = data.settings.reminder_hours_after_post || 12;
+                document.getElementById('setting-timezone').value = data.settings.timezone || 'Asia/Riyadh';
+                document.getElementById('setting-friday-kahf').checked = data.settings.friday_kahf_enabled;
+
+            } catch (err) {
+                console.error('Error fetching status:', err);
+            }
+        }
+
+        // Launch / Connect Chrome Profile 2
+        async function launchChromeProfile() {
+            showToast('جاري تشغيل Google Chrome وربط بروفايل 2...');
+            try {
+                const res = await fetch('/api/chrome/launch', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, !data.success);
+                setTimeout(fetchStatus, 1500);
+            } catch (err) {
+                showToast('فشل تشغيل Google Chrome', true);
+            }
+        }
+
+        // Toggle Bot Start / Stop
+        async function toggleBotState() {
+            const endpoint = botRunning ? '/api/bot/stop' : '/api/bot/start';
+            try {
+                const res = await fetch(endpoint, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message);
+                setTimeout(fetchStatus, 500);
+            } catch (err) {
+                showToast('فشل تغيير حالة البوت', true);
+            }
+        }
+
+        // Khatmah Slider & Manual Page Controls
+        let isUserSliding = false;
+
+        function onSliderChange(val) {
+            isUserSliding = true;
+            document.getElementById('manual-page-input').value = val;
+            updateSurahPreview(val);
+        }
+
+        function onManualPageInput(val) {
+            isUserSliding = true;
+            let p = parseInt(val);
+            if (isNaN(p) || p < 1) p = 1;
+            if (p > 604) p = 604;
+            document.getElementById('khatmah-slider').value = p;
+            updateSurahPreview(p);
+        }
+
+        function adjustSlider(delta) {
+            isUserSliding = true;
+            let current = parseInt(document.getElementById('manual-page-input').value) || 1;
+            let target = current + delta;
+            if (target < 1) target = 1;
+            if (target > 604) target = 604;
+            document.getElementById('manual-page-input').value = target;
+            document.getElementById('khatmah-slider').value = target;
+            updateSurahPreview(target);
+        }
+
+        function updateSurahPreview(page) {
+            const p = parseInt(page);
+            if (typeof allSurahs !== 'undefined' && allSurahs.length > 0) {
+                const surah = allSurahs.find(s => p >= s.page_start && p <= s.page_end);
+                if (surah) {
+                    document.getElementById('slider-preview-surah').textContent = `سورة ${surah.name_arabic} (ص ${p})`;
+                    return;
+                }
+            }
+            document.getElementById('slider-preview-surah').textContent = `صفحة ${p}`;
+        }
+
+        async function saveKhatmahPage() {
+            const page = parseInt(document.getElementById('manual-page-input').value);
+            const cycle = parseInt(document.getElementById('khatmah-cycle').textContent) || 1;
+            if (!page || page < 1 || page > 604) {
+                showToast('رقم الصفحة يجب أن يكون بين 1 و 604', true);
+                return;
+            }
+            try {
+                const res = await fetch('/api/khatmah/set_page', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ page: page, cycle: cycle })
+                });
+                const data = await res.json();
+                showToast(data.message, !data.success);
+                isUserSliding = false;
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل تحديث بداية الورد', true);
+            }
+        }
+
+        // Trigger Post Now
+        async function triggerPostNow() {
+            if (!confirm('هل تريد نشر ورد اليوم فوراً في المجموعة؟')) return;
+            try {
+                const res = await fetch('/api/actions/post_now', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, !data.success);
+                fetchStatus();
+            } catch (err) {
+                showToast('حدث خطأ أثناء النشر الفوري', true);
+            }
+        }
+
+        // Trigger Reminder Check
+        async function triggerReminderCheck() {
+            try {
+                const res = await fetch('/api/actions/check_reminders', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message);
+                fetchStatus();
+            } catch (err) {
+                showToast('حدث خطأ أثناء فحص التذكيرات', true);
+            }
+        }
+
+        // Sync Live Reactions from WhatsApp
+        async function syncReactionsNow() {
+            showToast('جاري فحص التفاعلات المباشرة من واتساب...');
+            try {
+                const res = await fetch('/api/actions/sync_reactions', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, !data.success);
+                fetchMembers();
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل فحص التفاعلات', true);
+            }
+        }
+
+        // Fetch Members List
+        async function fetchMembers() {
+            try {
+                const res = await fetch('/api/members');
+                const members = await res.json();
+                const tbody = document.getElementById('members-table-body');
+                tbody.innerHTML = '';
+
+                if (members.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">لا يوجد أعضاء مسجلين بعد. اضغط مزامنة لجلب الأعضاء.</td></tr>';
+                    return;
+                }
+
+                members.forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition';
+
+                    const reactionHtml = m.reacted 
+                        ? `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-xs"><i class="fa-solid fa-check mr-1"></i> أتم القراءة (${m.reaction_emoji || '👍'})</span>`
+                        : `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-semibold text-xs"><i class="fa-solid fa-clock mr-1"></i> بانتظار التفاعل</span>`;
+
+                    const reminderHtml = m.reminder_sent
+                        ? `<span class="text-purple-600 font-semibold"><i class="fa-solid fa-check-double"></i> تم الإرسال</span>`
+                        : `<span class="text-slate-400">لم يُرسل</span>`;
+
+                    const exemptChecked = m.is_exempt ? 'checked' : '';
+
+                    tr.innerHTML = `
+                        <td class="py-3.5 px-4 font-bold text-slate-800 flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                                ${m.display_name.charAt(0) || 'ع'}
+                            </div>
+                            <span>${m.display_name || 'عضو بدون اسم'}</span>
+                            ${m.is_admin ? '<span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">مشرف</span>' : ''}
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-500 font-mono">${m.phone_number || m.jid}</td>
+                        <td class="py-3.5 px-4 text-center">${reactionHtml}</td>
+                        <td class="py-3.5 px-4 text-center">${reminderHtml}</td>
+                        <td class="py-3.5 px-4 text-center">
+                            <input type="checkbox" ${exemptChecked} onchange="toggleExempt('${m.jid}')" class="w-4 h-4 text-emerald-600 rounded cursor-pointer">
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <button onclick="toggleExempt('${m.jid}')" class="text-slate-400 hover:text-emerald-600 text-xs font-semibold">
+                                ${m.is_exempt ? 'إلغاء الإعفاء' : 'إعفاء من التذكير'}
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error('Error fetching members:', err);
+            }
+        }
+
+        // Toggle Member Exemption
+        async function toggleExempt(jid) {
+            try {
+                const res = await fetch('/api/members/exempt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jid })
+                });
+                const data = await res.json();
+                showToast(data.message);
+                fetchMembers();
+            } catch (err) {
+                showToast('فشل تعديل حالة الإعفاء', true);
+            }
+        }
+
+        // Sync Members from WhatsApp
+        async function syncMembersFromWhatsApp() {
+            try {
+                const res = await fetch('/api/members/sync', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message);
+                fetchMembers();
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل مزامنة الأعضاء', true);
+            }
+        }
+
+        // Add Member Modal
+        function openAddMemberModal() { document.getElementById('add-member-modal').classList.remove('hidden'); }
+        function closeAddMemberModal() { document.getElementById('add-member-modal').classList.add('hidden'); }
+
+        async function submitAddMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-member-name').value.trim();
+            const phone = document.getElementById('new-member-phone').value.trim();
+            try {
+                const res = await fetch('/api/members/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone })
+                });
+                const data = await res.json();
+                showToast(data.message);
+                closeAddMemberModal();
+                fetchMembers();
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل إضافة العضو', true);
+            }
+        }
+
+        // Fetch Surahs List
+        async function fetchSurahs() {
+            try {
+                const res = await fetch('/api/surahs');
+                allSurahs = await res.json();
+                const select = document.getElementById('surah-select');
+                allSurahs.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.number;
+                    opt.textContent = `${s.number}. سورة ${s.name_arabic} (${s.name_english}) - صفحات ${s.page_start} إلى ${s.page_end}`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error fetching Surahs:', err);
+            }
+        }
+
+        function onSurahSelected() {
+            const num = document.getElementById('surah-select').value;
+            const surah = allSurahs.find(s => s.number == num);
+            const card = document.getElementById('selected-surah-card');
+            const btn = document.getElementById('btn-post-surah');
+
+            if (surah) {
+                document.getElementById('selected-surah-title').textContent = `سورة ${surah.name_arabic} (${surah.name_english})`;
+                document.getElementById('selected-surah-pages').textContent = `الصفحات: ${surah.page_start} إلى ${surah.page_end}`;
+                card.classList.remove('hidden');
+                btn.disabled = false;
+            } else {
+                card.classList.add('hidden');
+                btn.disabled = true;
+            }
+        }
+
+        async function postSelectedSurah() {
+            const num = document.getElementById('surah-select').value;
+            if (!num) return;
+            if (!confirm('هل تريد نشر هذه السورة في المجموعة فوراً؟')) return;
+
+            try {
+                const res = await fetch('/api/actions/post_surah', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ surah: num })
+                });
+                const data = await res.json();
+                showToast(data.message, !data.success);
+            } catch (err) {
+                showToast('فشل نشر السورة', true);
+            }
+        }
+
+        // Save Settings
+        async function saveSettings(e) {
+            e.preventDefault();
+            const body = {
+                group_jid: document.getElementById('setting-group-jid').value.trim(),
+                post_time: document.getElementById('setting-post-time').value,
+                pages_per_day: parseInt(document.getElementById('setting-pages-per-day').value),
+                reminder_hours: parseInt(document.getElementById('setting-reminder-hours').value),
+                timezone: document.getElementById('setting-timezone').value,
+                friday_kahf: document.getElementById('setting-friday-kahf').checked
+            };
+
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                showToast(data.message);
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل حفظ الإعدادات', true);
+            }
+        }
+
+        // Fetch Live Logs
+        async function fetchLogs() {
+            try {
+                const res = await fetch('/api/logs');
+                const data = await res.json();
+                const viewer = document.getElementById('log-viewer');
+                viewer.textContent = data.logs || 'لا توجد سجلات حالياً.';
+                viewer.scrollTop = viewer.scrollHeight;
+            } catch (err) {
+                console.error('Error fetching logs:', err);
+            }
+        }
+
+        function refreshData() {
+            fetchStatus();
+            showToast('تم تحديث البيانات بنجاح');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStatus();
+            fetchSurahs();
+            setInterval(fetchStatus, 8000); // Auto poll status every 8 seconds
+        });
+    </script>
+</body>
+</html>
