@@ -112,8 +112,8 @@
         <!-- ==================== TAB 1: DASHBOARD ==================== -->
         <section id="tab-dashboard" class="space-y-6">
 
-            <!-- WhatsApp QR Code Pairing Alert Card -->
-            <div id="qr-pairing-card" class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+            <!-- WhatsApp QR Code Pairing Alert Card (Only visible when session is NOT connected) -->
+            <div id="qr-pairing-card" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="space-y-2 max-w-xl">
                     <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-200 text-amber-900 rounded-full text-xs font-bold">
                         <i class="fa-solid fa-qrcode"></i> خطوة الربط السريع (لمرة واحدة فقط)
@@ -534,14 +534,18 @@
                     toggleBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white';
                 }
 
-                // WhatsApp Pairing QR Code Display
+                // WhatsApp Pairing QR Code Display (Hide completely if connected)
                 const qrCard = document.getElementById('qr-pairing-card');
                 const qrImg = document.getElementById('qr-image');
                 if (data.whatsapp_logged_in) {
-                    if (qrCard) qrCard.classList.add('hidden');
+                    if (qrCard) {
+                        qrCard.classList.add('hidden');
+                        qrCard.style.display = 'none';
+                    }
                 } else {
                     if (qrCard) {
                         qrCard.classList.remove('hidden');
+                        qrCard.style.display = 'flex';
                         if (qrImg) qrImg.src = '/qr?t=' + Date.now();
                     }
                 }

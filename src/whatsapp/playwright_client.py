@@ -28,6 +28,7 @@ class WhatsAppApiClient:
 
     def __init__(self, group_name: str = "ختمة ابراهيم معمر") -> None:
         self.group_name = group_name
+        self.session_dir = SESSION_DIR
         self.playwright = None
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
@@ -36,6 +37,14 @@ class WhatsAppApiClient:
         self.group_jid: Optional[str] = "120363429851468692@g.us"
         self.db = Database(DB_PATH)
         self.reaction_callbacks: List[Callable[[Dict[str, Any]], Any]] = []
+
+    @property
+    def has_saved_session(self) -> bool:
+        """Checks if a valid persistent WhatsApp session exists on disk."""
+        indexed_db = os.path.join(self.session_dir, "Default", "IndexedDB")
+        cookies = os.path.join(self.session_dir, "Default", "Cookies")
+        network_cookies = os.path.join(self.session_dir, "Default", "Network", "Cookies")
+        return os.path.exists(indexed_db) or os.path.exists(cookies) or os.path.exists(network_cookies)
 
     def register_reaction_callback(self, callback: Callable[[Dict[str, Any]], Any]) -> None:
         self.reaction_callbacks.append(callback)

@@ -206,7 +206,7 @@ class AdminRequestHandler(BaseHTTPRequestHandler):
             group_jid_setting = bot_manager.db.get_setting("group_jid", settings.WHATSAPP_GROUP_JID)
 
             from src.whatsapp.playwright_client import pw_whatsapp
-            whatsapp_logged_in = pw_whatsapp.is_logged_in
+            whatsapp_logged_in = pw_whatsapp.is_logged_in or pw_whatsapp.has_saved_session
 
             self._send_json({
                 "bot_running": bot_manager.is_running,
