@@ -177,7 +177,7 @@ erDiagram
 
 ```bash
 # Activate environment
-source /home/ahmadm/projects/baba-quran/.venv/bin/activate
+source .venv/bin/activate
 
 # Service lifecycle
 ./manage.sh start      # Start background bot & web admin

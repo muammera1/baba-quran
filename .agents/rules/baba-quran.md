@@ -47,7 +47,7 @@ globs: **/*
 ### 7. Virtual Environment Execution
 - Always use the dedicated virtual environment:
   ```bash
-  source /home/ahmadm/projects/baba-quran/.venv/bin/activate
+  source .venv/bin/activate
   ```
 
 ### 8. Singleton Session Directory Lock

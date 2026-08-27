@@ -47,9 +47,9 @@
 ### 7. Virtual Environment Execution
 - Always use the dedicated virtual environment:
   ```bash
-  source /home/ahmadm/projects/baba-quran/.venv/bin/activate
+  source .venv/bin/activate
   ```
-  Or run python commands with `/home/ahmadm/projects/baba-quran/.venv/bin/python`.
+  Or run python commands with `.venv/bin/python`.
 
 ### 8. Singleton Session Directory Lock
 - The background daemon (`./manage.sh`) holds an exclusive lock on `data/session/playwright_wa/`.

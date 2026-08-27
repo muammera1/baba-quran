@@ -74,13 +74,13 @@ Access the dashboard in your browser:
 
 ## 📚 Technical Documentation & ADRs
 
-- **[Master Architecture Plan (plan.md)](file:///home/ahmadm/projects/baba-quran/plan.md)**
-- **[Developer & Agent Guidelines (GEMINI.md)](file:///home/ahmadm/projects/baba-quran/GEMINI.md)**
-- **[REST API Specification (docs/api.md)](file:///home/ahmadm/projects/baba-quran/docs/api.md)**
-- **[ADR-001: WA-JS Injected Media Dispatch](file:///home/ahmadm/projects/baba-quran/docs/adr/001-wajs-media-dispatch.md)**
-- **[ADR-002: On-Demand Reactions via ReactionsStore](file:///home/ahmadm/projects/baba-quran/docs/adr/002-on-demand-reactions.md)**
-- **[ADR-003: Linux / WSL Environment Isolation](file:///home/ahmadm/projects/baba-quran/docs/adr/003-linux-wsl-isolation.md)**
-- **[Database Schema DDL (data/db/schema.sql)](file:///home/ahmadm/projects/baba-quran/data/db/schema.sql)**
+- **[Master Architecture Plan (plan.md)](plan.md)**
+- **[Developer & Agent Guidelines (GEMINI.md)](GEMINI.md)**
+- **[REST API Specification (docs/api.md)](docs/api.md)**
+- **[ADR-001: WA-JS Injected Media Dispatch](docs/adr/001-wajs-media-dispatch.md)**
+- **[ADR-002: On-Demand Reactions via ReactionsStore](docs/adr/002-on-demand-reactions.md)**
+- **[ADR-003: Linux / WSL Environment Isolation](docs/adr/003-linux-wsl-isolation.md)**
+- **[Database Schema DDL (data/db/schema.sql)](data/db/schema.sql)**
 
 ---
 
