@@ -345,7 +345,7 @@ class WhatsAppApiClient:
             return False
 
     async def sync_group_members(self) -> List[Dict[str, Any]]:
-        """Syncs all group members from WhatsApp into local SQLite database."""
+        """Syncs all group members from WhatsApp into local SQLite database with real phone numbers."""
         if not self.page or not self.is_ready:
             return []
 
@@ -356,16 +356,42 @@ class WhatsAppApiClient:
                     const participants = await WPP.group.getParticipants('{jid}');
                     const results = [];
                     for (const p of participants) {{
+                        const pId = p.id ? (p.id._serialized || String(p.id)) : String(p);
                         let name = '';
+                        let phone = '';
+
                         try {{
-                            const c = await WPP.contact.get(p.id ? (p.id._serialized || p.id) : p);
-                            name = c ? (c.pushname || c.name || c.formattedName || c.shortName || '') : '';
+                            const c = window.WPP.whatsapp.ContactStore ? window.WPP.whatsapp.ContactStore.get(pId) : (await WPP.contact.get(pId));
+                            if (c) {{
+                                name = c.name || c.formattedName || '';
+                                if (!name || name === 'You' || name.startsWith('+')) {{
+                                    name = c.pushname || c.verifiedName || name;
+                                }}
+                                if (!name) {{
+                                    name = c.pushname || c.shortName || '';
+                                }}
+
+                                if (c.formattedPhone) {{
+                                    phone = c.formattedPhone;
+                                }} else if (c.phoneNumber && typeof c.phoneNumber === 'object' && c.phoneNumber.user) {{
+                                    phone = '+' + c.phoneNumber.user;
+                                }} else if (c.phoneNumber && typeof c.phoneNumber === 'string') {{
+                                    phone = c.phoneNumber;
+                                }} else if (c.number) {{
+                                    phone = '+' + c.number;
+                                }}
+                            }}
                         }} catch (ce) {{}}
+
+                        if (!phone) {{
+                            phone = pId.split('@')[0];
+                        }}
+
                         results.push({{
-                            id: p.id ? (p.id._serialized || p.id) : String(p),
-                            phone: (p.id ? (p.id._serialized || p.id) : String(p)).split('@')[0],
-                            name: name,
-                            isAdmin: Boolean(p.isAdmin || p.isSuperAdmin)
+                            id: pId,
+                            phone: phone,
+                            name: name || 'عضو',
+                            isAdmin: Boolean(p.isAdmin || p.isSuperAdmin || p.admin)
                         }});
                     }}
                     return results;
@@ -375,18 +401,17 @@ class WhatsAppApiClient:
             }}""")
 
             for m in members:
-                disp_name = m.get("name") or m["phone"]
-                self.db.upsert_member(
-                    GroupMember(
+                if m.get("id"):
+                    member_obj = GroupMember(
                         jid=m["id"],
-                        phone_number=m["phone"],
-                        display_name=disp_name,
+                        phone_number=m.get("phone", m["id"].split('@')[0]),
+                        display_name=m.get("name", "عضو"),
                         is_active=True,
-                        is_admin=bool(m.get("isAdmin")),
-                        is_exempt=False
+                        is_admin=m.get("isAdmin", False),
+                        is_exempt=False,
                     )
-                )
-            logger.info(f"Synced {len(members)} group members into SQLite database.")
+                    self.db.upsert_member(member_obj)
+            logger.info(f"Synced {len(members)} group members with real phone numbers into SQLite database.")
             return members
         except Exception as e:
             logger.error(f"Error syncing group members: {e}")
