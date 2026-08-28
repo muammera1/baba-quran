@@ -39,12 +39,9 @@ class WhatsAppApiClient:
         self.reaction_callbacks: List[Callable[[Dict[str, Any]], Any]] = []
 
     @property
-    def has_saved_session(self) -> bool:
-        """Checks if a valid persistent WhatsApp session exists on disk."""
-        indexed_db = os.path.join(self.session_dir, "Default", "IndexedDB")
-        cookies = os.path.join(self.session_dir, "Default", "Cookies")
-        network_cookies = os.path.join(self.session_dir, "Default", "Network", "Cookies")
-        return os.path.exists(indexed_db) or os.path.exists(cookies) or os.path.exists(network_cookies)
+    def is_authenticated(self) -> bool:
+        """Returns True strictly if live WhatsApp Web is authenticated and ready."""
+        return bool(self.is_logged_in and self.is_ready)
 
     def register_reaction_callback(self, callback: Callable[[Dict[str, Any]], Any]) -> None:
         self.reaction_callbacks.append(callback)
@@ -58,55 +55,68 @@ class WhatsAppApiClient:
             # Extract reaction details
             msg_id = data.get("id") or data.get("msgId")
             sender = data.get("sender") or data.get("senderJid") or data.get("author")
-            reaction = data.get("reaction") or data.get("reactionText") or data.get("emoji")
+            emoji = data.get("reactionText") or data.get("emoji")
 
-            if msg_id and sender:
-                # Record in SQLite database
+            if msg_id and sender and emoji:
+                # Update SQLite database
                 self.db.record_reaction(
                     message_id=str(msg_id),
                     member_jid=str(sender),
-                    emoji=str(reaction) if reaction else "👍"
+                    reaction_emoji=str(emoji),
                 )
-                logger.info(f"✅ Recorded reaction '{reaction}' from member '{sender}' on post '{msg_id}'")
+                logger.info(f"Recorded reaction '{emoji}' for member '{sender}' on post '{msg_id}'")
 
-            for cb in self.reaction_callbacks:
-                try:
-                    if asyncio.iscoroutinefunction(cb):
-                        await cb(data)
-                    else:
+                # Trigger any registered callbacks
+                for cb in self.reaction_callbacks:
+                    try:
                         cb(data)
-                except Exception as cbe:
-                    logger.error(f"Error in reaction callback: {cbe}")
-
+                    except Exception as ce:
+                        logger.error(f"Error in reaction callback: {ce}")
         except Exception as e:
-            logger.error(f"Error handling reaction event: {e}")
+            logger.error(f"Error processing reaction event: {e}")
 
     async def start(self) -> None:
-        """Launches headless Chromium, loads persistent session, and initializes WPP."""
-        os.makedirs(SESSION_DIR, exist_ok=True)
-        logger.info(f"Starting WhatsApp API Client (Session: {SESSION_DIR})...")
+        """Launches persistent Chromium context and navigates to WhatsApp Web."""
+        if self.context:
+            return
+
+        logger.info(f"Starting WhatsApp API Client (Session: {self.session_dir})...")
+        os.makedirs(self.session_dir, exist_ok=True)
+        os.makedirs(os.path.dirname(QR_IMAGE_PATH), exist_ok=True)
 
         self.playwright = await async_playwright().start()
         self.context = await self.playwright.chromium.launch_persistent_context(
-            user_data_dir=SESSION_DIR,
+            user_data_dir=self.session_dir,
             headless=True,
+            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             args=[
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
+                "--disable-accelerated-2d-canvas",
+                "--no-first-run",
+                "--no-zygote",
                 "--disable-gpu",
             ],
             viewport={"width": 1280, "height": 800},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         )
 
-        self.page = self.context.pages[0] if self.context.pages else await self.context.new_page()
-
-        # Expose python reaction callback to browser context
-        await self.page.expose_function("onReactionReceived", self._on_reaction_received)
+        if self.context.pages:
+            self.page = self.context.pages[0]
+        else:
+            self.page = await self.context.new_page()
 
         logger.info("Loading https://web.whatsapp.com...")
         await self.page.goto("https://web.whatsapp.com", wait_until="domcontentloaded", timeout=60000)
+
+        # Expose binding for real-time reactions if supported
+        try:
+            await self.page.expose_binding(
+                "onReactionReceived",
+                lambda source, reaction_json: asyncio.create_task(self._on_reaction_received(reaction_json)),
+            )
+        except Exception:
+            pass
 
         # Start background monitor for login & WPP injection
         asyncio.create_task(self._init_wpp_loop())
@@ -123,6 +133,11 @@ class WhatsAppApiClient:
                     if not self.is_logged_in:
                         logger.info("🎉 WhatsApp Web session detected! Injecting WA-JS API bridge...")
                         self.is_logged_in = True
+                        if os.path.exists(QR_IMAGE_PATH):
+                            try:
+                                os.remove(QR_IMAGE_PATH)
+                            except Exception:
+                                pass
 
                     # Inject WA-JS if not present
                     has_wpp = await self.page.evaluate("() => typeof window.WPP !== 'undefined'")
@@ -172,9 +187,11 @@ class WhatsAppApiClient:
                     await asyncio.sleep(5)
                     continue
 
-                # QR code screenshot capture if not logged in
-                qr_canvas = await self.page.query_selector('canvas[aria-label="Scan this QR code to link a device"], div[data-ref]')
+                # QR code canvas / logout detection
+                qr_canvas = await self.page.query_selector('canvas[aria-label*="Scan" i], canvas[aria-label*="QR" i], div[data-ref]')
                 if qr_canvas:
+                    if self.is_logged_in or self.is_ready:
+                        logger.warning("⚠️ WhatsApp Web disconnected / logged out. Capturing new QR code...")
                     self.is_logged_in = False
                     self.is_ready = False
                     await qr_canvas.screenshot(path=QR_IMAGE_PATH)

@@ -72,12 +72,20 @@ class BotManager:
                 settings=settings,
             )
             from src.whatsapp.playwright_client import pw_whatsapp
-            self._loop.run_until_complete(self.wa_client.connect())
-            self._loop.run_until_complete(pw_whatsapp.start())
-            self.scheduler.start()
-            self.is_running = True
-            logger.info("Bot started successfully with live WhatsApp API client in background thread.")
-            self._loop.run_forever()
+
+            async def main_worker() -> None:
+                await self.wa_client.connect()
+                await pw_whatsapp.start()
+                self.scheduler.start()
+                self.is_running = True
+                logger.info("Bot started successfully with live WhatsApp API client in background thread.")
+                while self.is_running:
+                    await asyncio.sleep(1)
+
+            try:
+                self._loop.run_until_complete(main_worker())
+            except Exception as e:
+                logger.error(f"Background worker error: {e}")
 
         self._thread = threading.Thread(target=run_in_thread, daemon=True)
         self._thread.start()
@@ -87,11 +95,11 @@ class BotManager:
     def stop_bot(self) -> bool:
         if not self.is_running:
             return True
+        self.is_running = False
         if self.scheduler:
             self.scheduler.shutdown()
         if self._loop and self._loop.is_running():
             self._loop.call_soon_threadsafe(self._loop.stop)
-        self.is_running = False
         logger.info("Bot stopped.")
         return True
 
@@ -211,7 +219,7 @@ class AdminRequestHandler(BaseHTTPRequestHandler):
             group_jid_setting = bot_manager.db.get_setting("group_jid", settings.WHATSAPP_GROUP_JID)
 
             from src.whatsapp.playwright_client import pw_whatsapp
-            whatsapp_logged_in = pw_whatsapp.is_logged_in or pw_whatsapp.has_saved_session
+            whatsapp_logged_in = bool(pw_whatsapp.is_authenticated)
 
             self._send_json({
                 "bot_running": bot_manager.is_running,
@@ -334,14 +342,14 @@ class AdminRequestHandler(BaseHTTPRequestHandler):
                 self._send_json({"success": False, "message": f"خطأ: {str(e)}"}, 500)
             return
 
-        # Chrome Profile 2 Launch
-        if path == "/api/chrome/launch":
-            from src.whatsapp.chrome_driver import chrome_driver
-            success = chrome_driver.launch_chrome()
-            if success:
-                self._send_json({"success": True, "message": "تم إطلاق Google Chrome بروفايل 2 وتفعيل منفذ التحكم 9222 بنجاح"})
-            else:
-                self._send_json({"success": False, "message": "تعذر تشغيل Google Chrome. يرجى التأكد من المسار"}, 500)
+        # WhatsApp Client Connection / Reconnect
+        if path in ("/api/chrome/launch", "/api/whatsapp/reconnect"):
+            try:
+                from src.whatsapp.playwright_client import pw_whatsapp
+                bot_manager.run_async_coroutine(pw_whatsapp.start())
+                self._send_json({"success": True, "message": "تم تهيئة وتشغيل عميل واتساب بنجاح"})
+            except Exception as e:
+                self._send_json({"success": False, "message": f"خطأ: {str(e)}"}, 500)
             return
 
         # Actions: Post Today's Pages Now (Proactive Execution)
@@ -504,6 +512,10 @@ def run_web_server(host: str = "0.0.0.0", port: int = 8080) -> None:
     print(f"  📖 BABA QURAN WEB ADMIN DASHBOARD STARTED          ")
     print(f"  Access URL: http://localhost:{port}               ")
     print(f"=======================================================\n")
+    
+    # Automatically initialize background worker and WhatsApp Web client
+    bot_manager.start_bot()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
