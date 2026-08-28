@@ -12,9 +12,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import parse_qs, urlparse
 
-# Ensure project root is in sys.path
+import site
+
+# Ensure project root and user packages are in sys.path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
+user_site = site.getusersitepackages()
+if user_site and os.path.exists(user_site) and user_site not in sys.path:
+    sys.path.append(user_site)
 
 from src.core.config import load_yaml_settings, settings
 from src.core.database import Database

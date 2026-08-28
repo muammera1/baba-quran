@@ -16,12 +16,26 @@ PORT = 8080
 
 
 def get_running_pid() -> int:
-    """Returns PID if process is running, otherwise 0."""
+    """Returns PID if process is actually running our server, otherwise 0."""
     if not os.path.exists(PID_FILE):
         return 0
     try:
         with open(PID_FILE, "r", encoding="utf-8") as f:
             pid = int(f.read().strip())
+        
+        # Verify that the process actually exists and is running our server
+        cmdline_path = f"/proc/{pid}/cmdline"
+        if os.path.exists(cmdline_path):
+            with open(cmdline_path, "rb") as f:
+                cmdline = f.read().decode("utf-8", errors="ignore")
+                if "server.py" in cmdline or "src.web.server" in cmdline:
+                    return pid
+                else:
+                    # Stale PID belonging to another system process
+                    if os.path.exists(PID_FILE):
+                        os.remove(PID_FILE)
+                    return 0
+
         os.kill(pid, 0)
         return pid
     except (OSError, ValueError):
@@ -40,11 +54,13 @@ def start_server() -> None:
     os.makedirs(os.path.join(PROJECT_DIR, "logs"), exist_ok=True)
 
     log_fd = open(LOG_FILE, "a", encoding="utf-8")
+    env = os.environ.copy()
     proc = subprocess.Popen(
         [sys.executable, SERVER_SCRIPT, "--port", str(PORT)],
         stdout=log_fd,
         stderr=log_fd,
         cwd=PROJECT_DIR,
+        env=env,
         start_new_session=True,
     )
 
