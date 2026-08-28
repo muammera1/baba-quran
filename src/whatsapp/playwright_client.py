@@ -370,7 +370,23 @@ class WhatsAppApiClient:
         try:
             members = await self.page.evaluate(f"""async () => {{
                 try {{
-                    const participants = await WPP.group.getParticipants('{jid}');
+                    let targetJid = '{jid}';
+                    if (!targetJid || !targetJid.includes('@g.us')) {{
+                        const chats = await WPP.chat.list();
+                        const group = chats.find(c => c.isGroup && (
+                            (c.name || '').includes('{self.group_name}') || 
+                            (c.formattedTitle || '').includes('{self.group_name}')
+                        )) || chats.find(c => c.isGroup);
+                        if (group) {{
+                            targetJid = group.id ? (group.id._serialized || group.id) : String(group);
+                        }}
+                    }}
+
+                    if (!targetJid || !targetJid.includes('@g.us')) {{
+                        return [];
+                    }}
+
+                    const participants = await WPP.group.getParticipants(targetJid);
                     const results = [];
                     for (const p of participants) {{
                         const pId = p.id ? (p.id._serialized || String(p.id)) : String(p);

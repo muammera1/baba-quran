@@ -103,13 +103,17 @@ class BotManager:
         logger.info("Bot stopped.")
         return True
 
-    def run_async_coroutine(self, coro: Any) -> Any:
-        """Executes an async task synchronously."""
-        loop = asyncio.new_event_loop()
-        try:
-            return loop.run_until_complete(coro)
-        finally:
-            loop.close()
+    def run_async_coroutine(self, coro: Any, timeout: float = 30.0) -> Any:
+        """Executes an async task safely on the bot's dedicated event loop or a fresh loop."""
+        if self._loop and self._loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+            return future.result(timeout=timeout)
+        else:
+            loop = asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(coro)
+            finally:
+                loop.close()
 
 
 bot_manager = BotManager()
@@ -445,11 +449,13 @@ class AdminRequestHandler(BaseHTTPRequestHandler):
             return
 
         # Members: Sync from WhatsApp
-        if path == "/api/members/sync":
+        if path in ("/api/members/sync", "/api/actions/sync_members"):
             try:
-                members = bot_manager.run_async_coroutine(bot_manager.wa_client.sync_group_members())
-                self._send_json({"success": True, "message": f"تمت مزامنة {len(members)} عضو من واتساب"})
+                from src.whatsapp.playwright_client import pw_whatsapp
+                synced = bot_manager.run_async_coroutine(pw_whatsapp.sync_group_members())
+                self._send_json({"success": True, "message": f"تمت مزامنة وتحديث {len(synced)} عضو بنجاح من واتساب", "count": len(synced)})
             except Exception as e:
+                logger.error(f"Error syncing group members: {e}")
                 self._send_json({"success": False, "message": str(e)}, 500)
             return
 
