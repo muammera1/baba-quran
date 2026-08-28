@@ -103,8 +103,8 @@
         </div>
     </nav>
 
-    <!-- Alert / Toast Banner -->
-    <div id="toast" class="hidden fixed bottom-6 left-6 z-50 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300"></div>
+    <!-- Alert / Toast Banner (Floating Top Center) -->
+    <div id="toast" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-3 transition-all duration-300 transform backdrop-blur-md border"></div>
 
     <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
@@ -182,22 +182,22 @@
                         <span class="text-[10px] text-emerald-400 font-mono">1</span>
                         <input type="range" id="khatmah-slider" min="1" max="604" value="1" oninput="onSliderChange(this.value)" class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-amber-400" />
                         <span class="text-[10px] text-emerald-400 font-mono">604</span>
-                        <button type="button" onclick="saveKhatmahPage()" class="px-3 py-1.5 bg-gold-500 hover:bg-gold-400 text-emerald-950 font-bold text-xs rounded-lg shadow transition whitespace-nowrap flex items-center gap-1">
-                            <i class="fa-solid fa-check"></i> حفظ البداية
+                        <button type="button" id="btn-save-khatmah" onclick="saveKhatmahPage()" class="px-3.5 py-1.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-emerald-950 font-bold text-xs rounded-lg shadow-md transition-all whitespace-nowrap flex items-center gap-1.5">
+                            <i class="fa-solid fa-check"></i> <span>حفظ البداية</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Quick Action Buttons -->
                 <div class="mt-5 pt-4 border-t border-emerald-700/60 flex flex-wrap items-center gap-3">
-                    <button onclick="triggerPostNow()" class="px-4 py-2 bg-gold-500 hover:bg-gold-400 text-emerald-950 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> نشر ورد اليوم فوراً
+                    <button id="btn-post-now" onclick="triggerPostNow()" class="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-emerald-950 rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> <span>نشر ورد اليوم فوراً</span>
                     </button>
-                    <button onclick="triggerReminderCheck()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-semibold text-xs border border-emerald-600 transition flex items-center gap-2">
-                        <i class="fa-solid fa-bell"></i> فحص تذكيرات الـ 12 ساعة
+                    <button id="btn-check-reminders" onclick="triggerReminderCheck()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white rounded-xl font-semibold text-xs border border-emerald-600 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-bell"></i> <span>فحص تذكيرات الـ 12 ساعة</span>
                     </button>
-                    <button onclick="refreshData()" class="px-3 py-2 bg-emerald-800/80 hover:bg-emerald-700 text-emerald-200 rounded-xl font-semibold text-xs transition flex items-center gap-1.5 mr-auto">
-                        <i class="fa-solid fa-arrows-rotate"></i> تحديث البيانات
+                    <button id="btn-refresh-data" onclick="refreshData()" class="px-3.5 py-2.5 bg-emerald-800/80 hover:bg-emerald-700 active:scale-95 text-emerald-200 rounded-xl font-semibold text-xs transition-all flex items-center gap-1.5 mr-auto">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span>تحديث البيانات</span>
                     </button>
                 </div>
             </div>
@@ -295,14 +295,14 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="syncReactionsNow()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-thumbs-up"></i> فحص التفاعلات الآن
+                        <button id="btn-sync-reactions" onclick="syncReactionsNow()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-thumbs-up"></i> <span>فحص التفاعلات الآن</span>
                         </button>
-                        <button onclick="syncMembersFromWhatsApp()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-arrows-rotate"></i> مزامنة الأعضاء
+                        <button id="btn-sync-members" onclick="syncMembersFromWhatsApp()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-arrows-rotate"></i> <span>مزامنة الأعضاء</span>
                         </button>
-                        <button onclick="openAddMemberModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-user-plus"></i> إضافة عضو يدوياً
+                        <button onclick="openAddMemberModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-user-plus"></i> <span>إضافة عضو يدوياً</span>
                         </button>
                     </div>
                 </div>
@@ -490,13 +490,32 @@
             if (tabId === 'members') fetchMembers();
         }
 
-        // Toast Notification
+        // Toast Notification (Floating Top Center with Animation)
+        let toastTimeout = null;
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `fixed bottom-6 left-6 z-50 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${isError ? 'bg-red-600 text-white' : 'bg-emerald-800 text-white'}`;
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            const icon = isError 
+                ? '<i class="fa-solid fa-circle-exclamation text-base"></i>' 
+                : '<i class="fa-solid fa-circle-check text-base text-gold-400"></i>';
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-3 transition-all duration-300 transform backdrop-blur-lg border ${
+                isError 
+                    ? 'bg-red-950/90 text-red-200 border-red-700 shadow-red-900/30' 
+                    : 'bg-emerald-950/90 text-emerald-100 border-emerald-600/70 shadow-emerald-950/50'
+            }`;
+            
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 4000);
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, 0)';
+
+            toastTimeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -12px)';
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3500);
         }
 
         // Fetch Dashboard Status
@@ -668,12 +687,21 @@
         }
 
         async function saveKhatmahPage() {
+            const btn = document.getElementById('btn-save-khatmah');
+            const originalHtml = btn ? btn.innerHTML : '';
             const page = parseInt(document.getElementById('manual-page-input').value);
             const cycle = parseInt(document.getElementById('khatmah-cycle').textContent) || 1;
+            
             if (!page || page < 1 || page > 604) {
                 showToast('رقم الصفحة يجب أن يكون بين 1 و 604', true);
                 return;
             }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>';
+            }
+
             try {
                 const res = await fetch('/api/khatmah/set_page', {
                     method: 'POST',
@@ -683,48 +711,150 @@
                 const data = await res.json();
                 showToast(data.message, !data.success);
                 isUserSliding = false;
+                
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-check-double text-emerald-300"></i> <span>تم الحفظ ✓</span>';
+                    btn.className = 'px-3.5 py-1.5 bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-md transition-all whitespace-nowrap flex items-center gap-1.5 ring-2 ring-emerald-400';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                        btn.className = 'px-3.5 py-1.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-emerald-950 font-bold text-xs rounded-lg shadow-md transition-all whitespace-nowrap flex items-center gap-1.5';
+                    }, 2000);
+                }
                 fetchStatus();
             } catch (err) {
                 showToast('فشل تحديث بداية الورد', true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 
         // Trigger Post Now
         async function triggerPostNow() {
             if (!confirm('هل تريد نشر ورد اليوم فوراً في المجموعة؟')) return;
+            const btn = document.getElementById('btn-post-now');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر في المجموعة...</span>';
+            }
+
             try {
                 const res = await fetch('/api/actions/post_now', { method: 'POST' });
                 const data = await res.json();
                 showToast(data.message, !data.success);
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-300"></i> <span>تم النشر بنجاح ✓</span>';
+                    btn.className = 'px-4 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 ring-2 ring-emerald-400';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                        btn.className = 'px-4 py-2.5 bg-gold-500 hover:bg-gold-400 active:scale-95 text-emerald-950 rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2';
+                    }, 3000);
+                }
                 fetchStatus();
             } catch (err) {
                 showToast('حدث خطأ أثناء النشر الفوري', true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 
         // Trigger Reminder Check
         async function triggerReminderCheck() {
+            const btn = document.getElementById('btn-check-reminders');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الفحص...</span>';
+            }
+
             try {
                 const res = await fetch('/api/actions/check_reminders', { method: 'POST' });
                 const data = await res.json();
                 showToast(data.message);
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>اكتمل الفحص ✓</span>';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }, 2500);
+                }
                 fetchStatus();
             } catch (err) {
                 showToast('حدث خطأ أثناء فحص التذكيرات', true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 
         // Sync Live Reactions from WhatsApp
         async function syncReactionsNow() {
+            const btn = document.getElementById('btn-sync-reactions');
+            const orig = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الفحص...</span>';
+            }
             showToast('جاري فحص التفاعلات المباشرة من واتساب...');
+
             try {
                 const res = await fetch('/api/actions/sync_reactions', { method: 'POST' });
                 const data = await res.json();
                 showToast(data.message, !data.success);
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-300"></i> <span>تم الفحص ✓</span>';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = orig;
+                    }, 2000);
+                }
                 fetchMembers();
                 fetchStatus();
             } catch (err) {
                 showToast('فشل فحص التفاعلات', true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
+            }
+        }
+
+        // Sync Group Members from WhatsApp
+        async function syncMembersFromWhatsApp() {
+            const btn = document.getElementById('btn-sync-members');
+            const orig = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري المزامنة...</span>';
+            }
+            showToast('جاري جلب وتحديث قائمة الأعضاء من واتساب...');
+
+            try {
+                const res = await fetch('/api/actions/sync_members', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message || 'تم تحديث قائمة الأعضاء بنجاح', !data.success);
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-300"></i> <span>تمت المزامنة ✓</span>';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = orig;
+                    }, 2000);
+                }
+                fetchMembers();
+                fetchStatus();
+            } catch (err) {
+                showToast('فشل مزامنة الأعضاء', true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                }
             }
         }
 
@@ -892,6 +1022,13 @@
         // Save Settings
         async function saveSettings(e) {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const orig = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري حفظ الإعدادات...</span>';
+            }
+
             const body = {
                 group_jid: document.getElementById('setting-group-jid').value.trim(),
                 post_time: document.getElementById('setting-post-time').value,
@@ -908,10 +1045,21 @@
                     body: JSON.stringify(body)
                 });
                 const data = await res.json();
-                showToast(data.message);
+                showToast(data.message || 'تم حفظ الإعدادات بنجاح');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check text-emerald-300"></i> <span>تم حفظ الإعدادات ✓</span>';
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = orig;
+                    }, 2000);
+                }
                 fetchStatus();
             } catch (err) {
                 showToast('فشل حفظ الإعدادات', true);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = orig;
+                }
             }
         }
 
@@ -929,6 +1077,16 @@
         }
 
         function refreshData() {
+            const btn = document.getElementById('btn-refresh-data');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i> <span>جاري التحديث...</span>';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-300"></i> <span>تم التحديث ✓</span>';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> <span>تحديث البيانات</span>';
+                    }, 1500);
+                }, 600);
+            }
             fetchStatus();
             showToast('تم تحديث البيانات بنجاح');
         }
